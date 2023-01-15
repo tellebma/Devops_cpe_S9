@@ -1,0 +1,38 @@
+version: '3'
+services:
+  frontend:
+    container_name: front
+    image: tellebma/frontend
+    ports:
+      - 4200:80
+    depends_on:
+      - backend
+    restart: always 
+
+  backend:
+    container_name: back
+    image: tellebma/backend
+    ports:
+      - 8080:8080
+    environment:
+      - JDBC_URL=postgres
+      - JDBC_PORT=5432
+      - JDBC_DB=jcorporation
+      - JDBC_USER=jcorporation
+      - JDBC_PASSWORD=jcorporation
+    depends_on:
+      - postgres
+    restart: always 
+
+  postgres:
+    container_name: bdd
+    image: postgres
+    environment:
+      - POSTGRES_PASSWORD=jcorporation
+      - POSTGRES_USER=jcorporation
+      - POSTGRES_DB=jcorporation
+    restart: always 
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+volumes:
+  pgdata:

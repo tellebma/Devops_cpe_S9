@@ -1,0 +1,95 @@
+# Build a Docker image with CI/CD and push to the GitLab registry.
+# Docker-in-Docker documentation: https://docs.gitlab.com/ee/ci/docker/using_docker_build.html
+
+#
+# - check app health
+# - build docker image
+# - publish docker image on dockerhub
+
+# stage definition
+stages:
+    - audit
+    - build
+    - publish
+
+# -----------
+# build
+# -----------
+
+
+docker-build:
+  # Use the official docker image.
+  image: docker:latest
+  stage: build
+  script:
+    - docker build --pull -t "tellebma/$CI_PROJECT_NAME:latest" .
+    
+  # Run this job in a branch where a Dockerfile exists
+  rules:
+    - if: $CI_COMMIT_BRANCH
+      exists:
+        - Dockerfile
+
+
+# -----------
+# publish
+# -----------
+
+docker-push:
+  # Use the official docker image.
+  image: docker:latest
+  stage: publish
+  before_script:
+    # connect to dockerhub. ids on one/CICD var
+    - docker login -u "$DOCKER_REGISTRY_USER" -p "$DOCKER_REGISTRY_PASSWORD"
+  script:
+    # publish docker image on docker hub.
+    - docker push "tellebma/$CI_PROJECT_NAME:latest"
+  # Run this job in a branch where a Dockerfile exists
+  rules:
+    - if: $CI_COMMIT_BRANCH
+      exists:
+        - Dockerfile
+
+
+#
+# osef d'avoir les tag en plus. flemme d'avoir 45 images sur dockerhub.
+#
+#docker-push-latest:
+#  # Use the official docker image.
+#  image: docker:latest
+#  stage: publish
+#  services:
+#    - docker:dind
+#  before_script:
+#    - docker login -u "$DOCKER_REGISTRY_USER" -p "$DOCKER_REGISTRY_PASSWORD"
+#  script:
+#    - docker push "tellebma/$CI_PROJECT_NAME:latest"
+#docker-push-tag:
+#  # Use the official docker image.
+#  image: docker:latest
+#  stage: publish
+#  services:
+#    - docker:dind
+#  before_script:
+#    - docker login -u "$DOCKER_REGISTRY_USER" -p "$DOCKER_REGISTRY_PASSWORD"
+#  script:
+#    - docker tag tellebma/$CI_PROJECT_NAME:latest tellebma/$CI_PROJECT_NAME:$CI_COMMIT_SHORT_SHA
+#    - docker push "tellebma/$CI_PROJECT_NAME:$CI_COMMIT_SHORT_SHA"
+
+# -----------
+# audit
+# -----------
+
+#dependancy-check:
+#  image: maven:3-jdk-11
+#  stage: audit
+#  script:
+#    - mvn org.apache.maven.plugins:maven-dependency-plugin:3.1.2:get
+#    - mvn dependency:check
+
+test-code:
+  image: maven:3-jdk-11
+  stage: audit
+  script:
+    -  mvn test
