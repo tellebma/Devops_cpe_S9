@@ -3,7 +3,7 @@
 
 
 # Expications
-Projet initialement hébergé sur (https://forge.cpe.granux.fr/one)[Gitlab externe]. Pour garder une trace je le met ici.
+Projet initialement hébergé sur [Gitlab externe](https://forge.cpe.granux.fr/one). Pour garder une trace je le met ici.
 
 Image hébergé automatiquement sur Docker Hub.
 
